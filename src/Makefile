@@ -15,5 +15,14 @@ main.o: main.cpp
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+DEBUG_OBJS = Board.o Move.o Square.o Piece.o Pawn.o Rook.o Bishop.o Knight.o King.o Queen.o
+
+debug: $(DEBUG_OBJS) debug_driver.o
+	$(CXX) $(DEBUG_OBJS) debug_driver.o -o Debugger $(LDFLAGS)
+
+debug_driver.o: debug_driver.cpp
+	$(CXX) $(CXXFLAGS) -c debug_driver.cpp
+
 clean:
 	rm -f *.o Chess
+

@@ -195,19 +195,19 @@ std::vector<Move> ThreatMap::getPossibleMoves() {
                     break;
                 }
                 case ROOK:
-                    for (auto move : possibleMovesRook(x, y)) possibleMovesSet.insert(move);
+                    for (auto move : possibleMovesRook(x, y)) possibleMoves.push_back(move);
                     break;
                 case BISHOP:
-                    for (auto move : possibleMovesBishop(x, y)) possibleMovesSet.insert(move);
+                    for (auto move : possibleMovesBishop(x, y)) possibleMoves.push_back(move);
                     break;
                 case KNIGHT:
-                    for (auto move : possibleMovesKnight(x, y)) possibleMovesSet.insert(move);
+                    for (auto move : possibleMovesKnight(x, y)) possibleMoves.push_back(move);
                     break;
                 case QUEEN:
-                    for (auto move : possibleMovesQueen(x, y)) possibleMovesSet.insert(move);
+                    for (auto move : possibleMovesQueen(x, y)) possibleMoves.push_back(move);
                     break;
                 case KING:
-                    for (auto move : possibleMovesKing(x, y)) possibleMovesSet.insert(move);
+                    for (auto move : possibleMovesKing(x, y)) possibleMoves.push_back(move);
                     break;
                 default:
                     break;
@@ -243,16 +243,3 @@ std::vector<Location> ThreatMap::buildThreatMap(std::vector<Move> possibleMoves)
     return threatMap;
 }
 
-int main() {
-
-    auto boardObject = std::make_unique<Board>();
-    
-    ThreatMap threatMapObject = ThreatMap(boardObject->getBoard(), boardObject->getCurrentPlayer());
-
-    std::vector<Location> threatMapVector = threatMapObject.getThreatMap();
-
-    for (auto location : threatMapVector) {
-        std::cout << "Attacked piece: " << location.x << " " << location.y << "\n";
-    }
-
-}

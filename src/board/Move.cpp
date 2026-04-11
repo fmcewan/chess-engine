@@ -1,5 +1,7 @@
 #include "Move.hpp"
 #include "../pieces/Piece.hpp"
+#include "ThreatMap.hpp"
+
 #include <stdexcept>
 #include <vector>
 #include <iostream>
@@ -342,7 +344,7 @@ bool Move::isLegalMoveKing() {
 // King check logic
 
 bool Move::isInCheck() {
-    
+
     return false;
 
 }
