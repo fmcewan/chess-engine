@@ -24,5 +24,5 @@ debug_driver.o: debug_driver.cpp
 	$(CXX) $(CXXFLAGS) -c debug_driver.cpp
 
 clean:
-	rm -f *.o Chess
+	rm -f *.o Chess Debugger 
 
