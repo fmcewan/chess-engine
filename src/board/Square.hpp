@@ -18,15 +18,17 @@ class Square {
 
         // Getters
     
-        Piece getPiece();
         int getLocationX();
         int getLocationY();
-        Location getLocation();
+        Location getLocation();        
+        
+        Piece getPiece();
 
         // Setters
-        
-        void setPiece(Piece setPiece);
         void setLocationX(int setLocationX);
         void setLocationY(int setLocationY);
         void setLocation(int setLocationX, int setLocationY);
+
+        void setPiece(Piece setPiece);
+
 };      

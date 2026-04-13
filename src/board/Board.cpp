@@ -11,6 +11,7 @@
 // Personal includes
 #include "Board.hpp"
 #include "Move.hpp"
+#include "MoveGenerator.hpp"
 #include "Square.hpp"
 #include "../pieces/Piece.hpp"
 #include "../pieces/Rook.hpp"
@@ -21,11 +22,11 @@
 #include "../pieces/Queen.hpp"
 
 // Constructors
-Board::Board(): height(8), width(8), board(std::vector<std::vector<Square>>(height, std::vector<Square>(width, Square(Piece(EMPTY, NONE, 0), 0, 0)))) {
+Board::Board(): height(8), width(8), grid(std::vector<std::vector<Square>>(height, std::vector<Square>(width, Square(Piece(EMPTY, NONE, 0), 0, 0)))) {
     initialiseBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
-Board::Board(std::string FEN): height(8), width(8),  board(std::vector<std::vector<Square>>(height, std::vector<Square>(width, Square(Piece(EMPTY, NONE, 0), 0, 0)))) {
+Board::Board(std::string FEN): height(8), width(8),  grid(std::vector<std::vector<Square>>(height, std::vector<Square>(width, Square(Piece(EMPTY, NONE, 0), 0, 0)))) {
     initialiseBoard(FEN);
 }
 
@@ -47,7 +48,7 @@ int Board::getFullmoves() {
 }
 
 Square Board::getSquare(int x, int y) {
-    return board[y][x];
+    return grid[y][x];
 }
 
 Color Board::getCurrentPlayer() {
@@ -58,8 +59,8 @@ std::pair<int, int> Board::getEnPassantSquare() {
     return enPassantSquare;
 }
 
-std::vector< std::vector<Square> > Board::getBoard() {
-    return board;
+std::vector< std::vector<Square> > Board::getGrid() {
+    return grid;
 }
 
 // Setters
@@ -81,7 +82,7 @@ void Board::setFullmoves(int setFullmoves) {
 
 void Board::setSquare(Piece setPiece, int setX, int setY) {
     Square setSquare = Square(setPiece, setX, setY);
-    board[setY][setX] = setSquare;
+    grid[setY][setX] = setSquare;
 }
 
 void Board::setCurrentPlayer(Color setCurrentPlayer) {
@@ -250,30 +251,32 @@ void Board::initialiseBoard(std::string FEN) {
 
     // Castling availability
 
+    // TODO: Change to work with new Castling logic home (Board class instead of Piece class)
+
     if (FENcomponents[2] != "-") {
 
-        Piece piece = board[7][7].getPiece();
+        Piece piece = grid[7][7].getPiece();
         
         if (FENcomponents[2].find("Q") && piece.getType() == ROOK && piece.getColor() == WHITE) {
 		    auto rook = static_cast<Rook*>(&piece);
         	rook->setCanCastle(true);
     	}        
 
-        piece = board[7][0].getPiece();
+        piece = grid[7][0].getPiece();
 
         if (FENcomponents[2].find("Q") && piece.getType() == ROOK && piece.getColor() == WHITE) {
             auto rook = static_cast<Rook*>(&piece);
             rook->setCanCastle(true);
         }
 
-        piece = board[0][7].getPiece();
+        piece = grid[0][7].getPiece();
 
         if (FENcomponents[2].find("k") && piece.getType() == ROOK && piece.getColor() == BLACK) {
             auto rook = static_cast<Rook*>(&piece);
             rook->setCanCastle(true);
         }  
 
-        piece = board[0][0].getPiece();
+        piece = grid[0][0].getPiece();
 
          if (FENcomponents[2].find("q") && piece.getType() == ROOK && piece.getColor() == BLACK) {
             auto rook = static_cast<Rook*>(&piece);
@@ -290,10 +293,10 @@ void Board::initialiseBoard(std::string FEN) {
         int X = charLocationToIntLocation[enPassantLocation[0]];
         int Y = enPassantLocation[1] - '0';
 
-        this->setEnPassantSquare(std::make_pair(X, Y));
+        setEnPassantSquare(std::make_pair(X, Y));
     }
     else {
-        this->setEnPassantSquare(std::make_pair(-1, -1));
+        setEnPassantSquare(std::make_pair(-1, -1));
     }
 
     // Halfmove clock
@@ -314,13 +317,12 @@ void Board::initialiseBoard(std::string FEN) {
 
 }
 
-
 void Board::printBoard() {
  
     for (int i=0; i<this->getHeight(); i++) {
         for (int j=0; j<this->getWidth(); j++) {
 
-            Piece piece = board[i][j].getPiece();
+            Piece piece = grid[i][j].getPiece();
 
             switch (piece.getType()) {
                 case PAWN: {
@@ -389,49 +391,244 @@ void Board::printBoard() {
     }
 }
 
-/* Move methods */
+/* Castling methods */
+bool Board::hasKingMoved(Color color) {
+    return (color == WHITE) ? hasKingMovedWhite : hasKingMovedBlack; 
+}
 
+bool Board::canCastleKingside(Color color) {
+    
+    int y = (color == WHITE) ? 7 : 0;
+    
+    if (color == WHITE) {
+        if (hasKingMovedWhite || hasKingsideRookMovedWhite) return false;
+    } else {
+        if (hasKingMovedBlack|| hasKingsideRookMovedBlack) return false;
+    }
+
+    if (grid[y][5].getPiece().getType() != EMPTY || 
+        grid[y][6].getPiece().getType() != EMPTY) {
+        return false;
+    }
+    
+    Color enemyColor = (color == WHITE) ? BLACK : WHITE;
+    if (MoveGenerator::isSquareAttacked(4, y, enemyColor, *this) ||
+        MoveGenerator::isSquareAttacked(5, y, enemyColor, *this) ||
+        MoveGenerator::isSquareAttacked(6, y, enemyColor, *this)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Board::canCastleQueenside(Color color) {
+
+    int y = (color == WHITE) ? 7 : 0;
+    
+    if (color == WHITE) {
+        if (hasKingMovedWhite || hasQueensideRookMovedWhite) return false;
+    } else {
+        if (hasKingMovedBlack|| hasQueensideRookMovedBlack) return false;
+    }
+
+    if (grid[y][1].getPiece().getType() != EMPTY || 
+        grid[y][2].getPiece().getType() != EMPTY || 
+        grid[y][3].getPiece().getType() != EMPTY) {
+        return false;
+    }
+    
+    Color enemyColor = (color == WHITE) ? BLACK : WHITE;
+    if (MoveGenerator::isSquareAttacked(4, y, enemyColor, *this) ||
+        MoveGenerator::isSquareAttacked(3, y, enemyColor, *this) ||
+        MoveGenerator::isSquareAttacked(2, y, enemyColor, *this)) {
+        return false;
+    }
+
+    return true;
+}
+
+/* Move methods */
+bool Board::executeMove(Move move) {
+
+    move.capturedPieceType = grid[move.toY][move.toX].getPiece().getType();
+    move.capturedColor = grid[move.toY][move.toX].getPiece().getColor();
+
+    move.oldWhiteKingMoved = hasKingMovedWhite;
+    move.oldBlackKingMoved = hasKingMovedBlack;
+    move.oldWhiteKingsideRookMoved = hasKingsideRookMovedWhite;
+    move.oldWhiteQueensideRookMoved = hasQueensideRookMovedWhite;
+    move.oldBlackKingsideRookMoved = hasKingsideRookMovedBlack;
+    move.oldBlackQueensideRookMoved = hasQueensideRookMovedBlack;
+
+    Piece movingPiece = grid[move.fromY][move.fromX].getPiece();
+
+    // Castling
+    if (move.isCastling) {
+        int rookFromX = (move.toX == 6) ? 7 : 0; // Kingside (7) or Queenside (0)
+        int rookToX = (move.toX == 6) ? 5 : 3;   // Kingside (5) or Queenside (3)
+        
+        // Teleport the Rook
+        grid[move.toY][rookToX].setPiece(grid[move.toY][rookFromX].getPiece());
+        grid[move.toY][rookFromX].setPiece(Piece(EMPTY, NONE, 0));
+    }
+
+    // En Passant
+    if (move.isEnPassant) {
+        int victimY = move.fromY; // The pawn is on the same row as the start
+        grid[victimY][move.toX].setPiece(Piece(EMPTY, NONE, 0));
+    }
+
+    if (move.isPromotion) {
+        grid[move.toY][move.toX].setPiece(Piece(move.promotionPiece, movingPiece.getColor(), 0));
+    } else {
+        grid[move.toY][move.toX].setPiece(movingPiece);
+    }
+    grid[move.fromY][move.fromX].setPiece(Piece(EMPTY, NONE, 0));
+
+    if (movingPiece.getType() == KING) {
+        if (movingPiece.getColor() == WHITE) hasKingMovedWhite= true;
+        else hasKingMovedBlack = true;
+    }
+
+    if (movingPiece.getType() == ROOK) {
+        if (movingPiece.getColor() == WHITE) {
+            if (move.fromX == 7 && move.fromY == 7) hasKingsideRookMovedWhite = true;
+            if (move.fromX == 0 && move.fromY == 7) hasQueensideRookMovedWhite = true;
+        } else {
+            if (move.fromX == 7 && move.fromY == 0) hasKingsideRookMovedBlack= true;
+            if (move.fromX == 0 && move.fromY == 0) hasQueensideRookMovedBlack = true;
+        }
+    }
+
+    currentPlayer = (currentPlayer == WHITE) ? BLACK : WHITE;
+
+    return true;
+
+}
+
+bool Board::undoMove(Move move) {
+
+    currentPlayer = (currentPlayer == WHITE) ? BLACK : WHITE;
+    
+    // 2. IDENTIFY THE PIECE THAT MOVED
+    Piece movingPiece = grid[move.toY][move.toX].getPiece();
+
+    // 3. REVERSE SPECIAL MOVES
+    if (move.isCastling) {
+        int rookFromX = (move.toX == 6) ? 7 : 0; 
+        int rookToX = (move.toX == 6) ? 5 : 3;   
+        
+        grid[move.toY][rookFromX].setPiece(grid[move.toY][rookToX].getPiece());
+        grid[move.toY][rookToX].setPiece(Piece(EMPTY, NONE, 0));
+    }
+
+    if (move.isEnPassant) {
+        grid[move.fromY][move.toX].setPiece(Piece(PAWN, currentPlayer, 0)); 
+    }
+
+    // 4. MOVE THE PIECE BACK ON THE GRID
+    if (move.isPromotion) {
+        grid[move.fromY][move.fromX].setPiece(Piece(PAWN, movingPiece.getColor(), 0));
+    } else {
+        grid[move.fromY][move.fromX].setPiece(movingPiece);
+    }
+
+    // 5. RESTORE THE DESTINATION SQUARE
+    if (move.isEnPassant) {
+        grid[move.toY][move.toX].setPiece(Piece(EMPTY, NONE, 0));
+    } else {
+        grid[move.toY][move.toX].setPiece(Piece(move.capturedPieceType, move.capturedColor, 0));
+    }
+
+    // 6. RESTORE HISTORICAL FLAGS
+    hasKingMovedWhite = move.oldWhiteKingMoved;
+    hasKingMovedBlack = move.oldBlackKingMoved;
+    hasKingsideRookMovedWhite = move.oldWhiteKingsideRookMoved;
+    hasQueensideRookMovedWhite = move.oldWhiteQueensideRookMoved;
+    hasKingsideRookMovedBlack = move.oldBlackKingsideRookMoved;
+    hasQueensideRookMovedBlack = move.oldBlackQueensideRookMoved;
+
+    return true;
+
+}
  
 bool Board::makeMove(Move move) {
 
     // Move information
-    int initialX = move.getInitialX();
-    int initialY = move.getInitialY();
-    int finalX = move.getFinalX();
-    int finalY = move.getFinalY();
+    int initialX = move.fromX;
+    int initialY = move.fromY;
+    int finalX = move.toX;
+    int finalY = move.toY;
     
-    Square initialSquare = board[initialY][initialX];
-    Square finalSquare = board[finalY][finalX];
-    
+    Piece initialPiece = grid[initialY][initialX].getPiece();
     Piece emptyPiece = Piece(EMPTY, NONE, 0);
-    Piece initialPiece = initialSquare.getPiece();
-    Piece finalPiece = finalSquare.getPiece();
-
+    
     int direction = (initialPiece.getColor() == BLACK) ? 1 : -1;
+    Square initialSquare = grid[initialY][initialX];
 
-    // Getting en Passant square
-    int enPassantX = getEnPassantSquare().first;
-    int enPassantY = getEnPassantSquare().second;
-
-    std::cout << move.isLegalMove() << "\n";
-
-    // Regular taking
-    if (move.isLegalMove() == true) {
-         
-        std::cout << "in move loop";            
-        board[finalY][finalX].setPiece(initialPiece);
-        
-        if (finalY == enPassantY && finalX == enPassantX) { 
-            board[enPassantY-1*direction][enPassantX].setPiece(Piece(EMPTY, NONE, 0));
-        }
+    // King History Logic
+    if (initialPiece.getType() == KING) {
+        if (initialPiece.getColor() == WHITE) {
+            hasKingMovedWhite = true;
+        } 
         else {
-            board[initialY][initialX].setPiece(emptyPiece);
+            hasKingMovedBlack = true;
+        }
+    }
+
+    // Rook History Logic (Necessary for castling)
+    if (initialPiece.getType() == ROOK) {
+        if (initialPiece.getColor() == WHITE) {
+            if (move.fromX == 7 && move.fromY == 7) hasKingsideRookMovedWhite = true;
+            if (move.fromX == 0 && move.fromY == 7) hasQueensideRookMovedWhite = true;
+        } 
+        else {
+            if (move.fromX == 7 && move.fromY == 0) hasKingsideRookMovedBlack = true;
+            if (move.fromX == 0 && move.fromY == 0) hasQueensideRookMovedBlack = true;
+        }
+    }    
+        
+    // Regular taking
+    if (MoveGenerator::isLegal(move, *this)) {
+         
+        // En Passant removal 
+        if (move.isEnPassant) { 
+            grid[move.toY-direction][move.toX].setPiece(Piece(EMPTY, NONE, 0));
         }
 
-        // Setting enPassant
-        setEnPassantSquare({move.getEnPassantSquare().x, move.getEnPassantSquare().y});
+        // Castling
+        if (move.isCastling) {
+            if (finalX == 6) { // Kingside
+                Piece rook = grid[finalY][7].getPiece();
+                grid[finalY][5].setPiece(rook);
+                grid[finalY][7].setPiece(emptyPiece);
+            } 
+            else if (finalX == 2) { // Queenside
+                Piece rook = grid[finalY][0].getPiece();
+                grid[finalY][3].setPiece(rook);
+                grid[finalY][0].setPiece(emptyPiece);
+            }
+        }
 
-        // Switching color
+        // Pawn promotion and piece placement
+        if (move.isPromotion) {
+            grid[finalY][finalX].setPiece(Piece(move.promotionPiece, initialPiece.getColor(), 9));
+        } 
+        else {
+            grid[finalY][finalX].setPiece(initialPiece);
+        }
+         
+        // Removing previous piece 
+        grid[initialY][initialX].setPiece(emptyPiece);
+        
+        // En Passant target square update 
+        if (initialPiece.getType() == PAWN && std::abs(move.toY - move.fromY) == 2) {
+            this->setEnPassantSquare({move.fromX, move.fromY + direction});
+        } 
+        else {
+            this->setEnPassantSquare({-1, -1});
+        }    
+
         Color newPlayer = (getCurrentPlayer() == BLACK) ? WHITE : BLACK;
         setCurrentPlayer(newPlayer);
 

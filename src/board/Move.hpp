@@ -4,42 +4,36 @@
 #include <vector>
 
 
-class Move {
+struct Move {
 
-	private:
-        std::vector< std::vector<Square> > board;
-        Color currentPlayer;
-        Location enPassantSquare;
+    // Location
+    int fromX, fromY;
+    int toX, toY;
 
-		int initialX;
-		int initialY;
-		int finalX;
-		int finalY;
+    // Move type flags
+    bool isCastling = false;
+    bool isEnPassant = false;
+    bool isPromotion = false;
 
-	public:
-		// Constructor
-		Move(std::vector< std::vector<Square> > board, Color currentPlayer, int setInitialX, int setInitialY, int setFinalX, int setFinalY);
+    // "Memory" for undoing moves
+    Pieces capturedPieceType = EMPTY;
+    Color capturedColor = NONE;
+    bool oldWhiteKingMoved;
+    bool oldBlackKingMoved;
+    bool oldWhiteKingsideRookMoved;
+    bool oldWhiteQueensideRookMoved;
+    bool oldBlackKingsideRookMoved;
+    bool oldBlackQueensideRookMoved;
 
-		// Getters
-		const int getInitialX();
-		const int getInitialY();
-		const int getFinalX();
-		const int getFinalY();
-        Location getEnPassantSquare();    
+    // Promotion piece
+    Pieces promotionPiece = EMPTY;
 
-        // Move legality
+    // Constructor
+    Move(int fX, int fY, int tX, int tY): fromX(fX), fromY(fY), toX(tX), toY(tY) {}
 
-        bool isLegalMove();
-        
-        bool isEmptyPath();
-        
-        bool isLegalMovePawn();
-        bool isLegalMoveKnight();
-        bool isLegalMoveRook();
-        bool isLegalMoveBishop();
-        bool isLegalMoveQueen();
-        bool isLegalMoveKing();
-
-        bool isInCheck();
-        bool isInCheckmate();
+    // Equality operator
+    bool operator==(const Move& other) const {
+        return fromX == other.fromX && fromY == other.fromY && toX == other.toX && toY == other.toY;
+    }
+    
 };
