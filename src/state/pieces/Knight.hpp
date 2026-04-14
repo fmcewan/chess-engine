@@ -4,6 +4,6 @@
 class Knight : public Piece {
     
     public: 
-        Knight(Color color_input);
+        Knight(Colour colour_input) : Piece(KNIGHT, colour_input, 3) {}
 
 };

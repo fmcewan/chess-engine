@@ -6,28 +6,28 @@
 #include <utility>
     
 // Header includes
-#include "Square.hpp"
 #include "Move.hpp"
-#include "../pieces/Piece.hpp"
+#include "../utilities/FEN.hpp"
+#include "./pieces/Piece.hpp"
 
+struct FENData;
 
 class Board {
 
     private:
 
-        // Board attributes
-        std::vector< std::vector<Square>> grid;
+        int height;
+        int width;
+        std::vector< std::vector<Piece>> grid;
+
         std::pair<int, int> enPassantSquare;
+        
         int totalPoints;
         int halfmoves;
         int fullmoves;
-        int height;
-        int width;
 
-        // Player attributes
-        Color currentPlayer;
+        Colour currentPlayer;
         
-        // Castling attributes
         bool hasKingMovedWhite;
         bool hasKingMovedBlack;
 
@@ -54,12 +54,17 @@ class Board {
         int getFullmoves();
         int getTotalPoints();
         
-        Location getKingLocation(Color color);
-        Color getCurrentPlayer();
+        bool getHasKingsideRookMoved(Colour colour);
+        bool getHasQueensideRookMoved(Colour colour);
 
-        Square getSquare(int x, int y);
+        std::string getFEN();
+        
+        std::pair<int,int> getKingLocation(Colour color);
+        Colour getCurrentPlayer();
+
+        Piece getPiece(int x, int y);
         std::pair<int, int> getEnPassantSquare();
-        std::vector< std::vector<Square> > getGrid();
+        std::vector< std::vector<Piece> > getGrid();
 
         // Setters
         void setHeight(int setHeight);
@@ -67,25 +72,21 @@ class Board {
         void setHalfmoves(int setHalfmoves);
         void setFullmoves(int setFullmoves);
         void setSquare(Piece setPiece, int x, int y);
-        void setCurrentPlayer(Color setCurrentPlayer);
+        void setCurrentPlayer(Colour setCurrentPlayer);
         void setEnPassantSquare(std::pair<int, int> setEnPassantSquare);
-        void setHasKingMoved(Color currentPlayer, bool setHasKingMoved);
+        void setHasKingMoved(Colour currentPlayer, bool setHasKingMoved);
 
         // Board methods   
-        void initialiseBoard(std::string FEN);
-        void printBoard();
+        void applyFENData(FENData data);
+        void printGrid();
 
         // Castling methods 
-        bool hasKingMoved(Color color);
-        bool canCastleKingside(Color color);
-        bool canCastleQueenside(Color color);
+        bool hasKingMoved(Colour color);
+        bool canCastleKingside(Colour color);
+        bool canCastleQueenside(Colour color);
         
-        // Move methods
-        
-        // Lightweight methods for piece movement simulation
-        bool executeMove(Move move); 
-        bool undoMove(Move move);
-
-        bool makeMove(Move move);
+        // Move methods 
+        void makeMove(Move& move);
+        void undoMove(const Move& move);
 
 };

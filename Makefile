@@ -1,17 +1,18 @@
 # FLAGS
 CXX = g++
-CXXFLAGS = -std=c++17 -g -Wall $(shell pkg-config --cflags sdl2 SDL2_image)
-LDFLAGS = $(shell pkg-config --libs sdl2 SDL2_image)
+CXX_FLAGS = -std=c++17 -g -Wall $(shell pkg-config --cflags sdl2 SDL2_image)
+LDF_LAGS = $(shell pkg-config --libs sdl2 SDL2_image)
+GTEST_FLAGS = -lgtest -lgtest_main -pthread
 
 # PATH
-VPATH = src/game:src/board:src/pieces:tests
+VPATH = src/ui:src/state:src/state/pieces:src/engine:src/utilities:tests
 
 # OBJECT VARIABLES
-GUI_OBJS = main.o Game.o Board.o Move.o Square.o Piece.o Pawn.o Rook.o Bishop.o Knight.o King.o Queen.o
-TEST_OBJS = Board.o Move.o Square.o Piece.o Pawn.o Rook.o Bishop.o Knight.o King.o Queen.o MoveGenerator.o
+GUI_OBJS = main.o Game.o Board.o Piece.o MoveGenerator.o 
+TEST_OBJS = Board.o FEN.o Piece.o MoveGenerator.o MoveLegality.o 
 
-chess-engine: $(GUIOBJS)
-	$(CXX) $(OBJS) -o chess $(LDFLAGS)
+chess-engine: $(GUI_OBJS)
+	$(CXX) $(GUI_OBJS) -o chess $(LDFLAGS)
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c main.cpp

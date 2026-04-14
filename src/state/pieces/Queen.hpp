@@ -4,6 +4,6 @@
 class Queen : public Piece {
     
     public: 
-        Queen(Color color_input);
+        Queen(Colour colour_input): Piece(QUEEN, colour_input, 9) {}
     
 };

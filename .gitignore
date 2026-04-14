@@ -27,6 +27,7 @@
 *.lib
 
 # Executables
+run_tests
 *.exe
 *.out
 *.app
