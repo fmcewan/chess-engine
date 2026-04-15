@@ -18,11 +18,11 @@ bool MoveLegality::isLegal(const Move& move, Board& board) {
 
     board.makeMove(moveCopy);
 
-    bool stillInCheck = !isInCheck(movingColor, board);
+    bool isSafe = !isInCheck(movingColor, board);
 
     board.undoMove(moveCopy);
 
-    return !stillInCheck;
+    return isSafe;
 
 }
 
@@ -90,6 +90,7 @@ bool MoveLegality::isSquareAttacked(int targetX, int targetY, Colour attackerCol
         {1,1}, {1,-1}, {-1,1}, {-1,-1}  
     };
 
+    // Check for sliding pieces
     for (auto& direction : directions) {
         for (int i = 1; i < 8; i++) {
             int tx = targetX + direction.first * i;
@@ -136,7 +137,7 @@ bool MoveLegality::isSquareAttacked(int targetX, int targetY, Colour attackerCol
 
     }
 
-    // Cheeck for pawns
+    // Check for pawns
     int pawnDirection = (attackerColor == BLACK) ? -1 : 1;
     for (int side : {-1, 1}) {
         
