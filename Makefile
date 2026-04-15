@@ -26,5 +26,5 @@ test: $(TEST_OBJS) $(OBJS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o chess
+	rm -f src/engine/*.o src/state/pieces/*.o src/state/*.o src/ui/*.o src/utilities/*.o tests/*.o run_tests
 
