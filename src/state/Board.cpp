@@ -350,20 +350,15 @@ void Board::makeMove(Move& move) {
         else hasKingMovedBlack = true;
     }
 
-    if (initialPiece.getType() == ROOK) {
-        if (initialPiece.getColour() == WHITE) {
-            if (move.fromX == 7 && move.fromY == 7) hasKingsideRookMovedWhite = true;
-            if (move.fromX == 0 && move.fromY == 7) hasQueensideRookMovedWhite = true;
-        } 
-        else {
-            if (move.fromX == 7 && move.fromY == 0) hasKingsideRookMovedBlack = true;
-            if (move.fromX == 0 && move.fromY == 0) hasQueensideRookMovedBlack = true;
-        }
-    }
+    if (move.fromX == 7 && move.fromY == 7 || move.toX == 7 && move.toY == 7) hasKingsideRookMovedWhite = true;
+    if (move.fromX == 0 && move.fromY == 7 || move.toX == 0 && move.toY == 7) hasQueensideRookMovedWhite = true;
+    if (move.fromX == 7 && move.fromY == 0 || move.toX == 7 && move.toY == 0) hasKingsideRookMovedBlack = true;
+    if (move.fromX == 0 && move.fromY == 0 || move.toX == 0 && move.toY == 0) hasQueensideRookMovedBlack = true;
 
     if (move.isEnPassant) { 
         grid[move.toY - direction][move.toX] = emptyPiece;
     }
+
     if (move.isCastling) {
         if (move.toX == 6) { 
             grid[move.toY][5] = grid[move.toY][7];
