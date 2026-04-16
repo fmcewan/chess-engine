@@ -6,13 +6,6 @@
 #include "MoveGenerator.hpp"
 #include "MoveLegality.hpp"
 
-void printMoves(std::vector<Move> moves) {
-    for (Move move : moves) {
-        std::cout << "("<< move.fromX << "->" << move.toX << ", " << move.fromY << "->" << move.toX << ")";
-    }
-    std::cout << std::endl;
-}
-
 std::vector<Move> MoveGenerator::generateAllLegalMoves(Board& board) {
 
     std::vector<Move> legalMoves;
@@ -54,8 +47,6 @@ std::vector<Move> MoveGenerator::generateAllLegalMoves(Board& board) {
 
         }
     }
-
-    printMoves(legalMoves);
 
     return legalMoves;
 
