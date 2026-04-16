@@ -196,29 +196,48 @@ bool MoveLegality::isPathClear(int fromX, int toX, int fromY, int toY, Board& bo
     return true;    
 }
 
-
 bool MoveLegality::isLegalMovePawn(const Move& move, Board& board) {
 
-    int initialX = move.fromX;
-    int initialY = move.fromY;
-    int finalX = move.toX;
-    int finalY = move.toY;
+    int changeInX = move.toX - move.fromX;
+    int changeInY = move.toY - move.fromY;
 
     auto grid = board.getGrid();
+    
+    Piece movingPiece = grid[move.fromY][move.fromX];
+    Piece targetPiece = grid[move.toY][move.toX];
 
-    Piece initialPiece = grid[initialY][initialX];
-    Piece finalPiece = grid[finalY][finalX];
+    int direction = (movingPiece.getColour() == BLACK) ? 1 : -1;
+    int startRank = (movingPiece.getColour() == BLACK) ? 1 : 6;
 
-    int direction = (initialPiece.getColour() == BLACK) ? 1 : -1;
+    if (changeInX == 0) {
+
+        // Single push
+        if (changeInY == direction && targetPiece.getType() == EMPTY) {
+            return true;
+        }
+        // Double push
+        if (changeInY == 2 * direction && move.fromY == startRank) {
+            
+            Piece intermediatePiece = grid[move.fromY + direction][move.fromX];
+            if (targetPiece.getType() == EMPTY && intermediatePiece.getType() == EMPTY) {
+                return true;
+            }
         
-    if (finalX == initialX && finalY == initialY+direction && finalPiece.getType() == EMPTY) {
-        return true;
-    }  
-    else if (finalX == initialX && finalY == initialY+2*direction && finalPiece.getType() == EMPTY && ((initialY == 1 && direction == 1) || (initialY == 6 && direction == -1))) {
-        return true;
+        }
     }
-    else if (((finalX == initialX+1) || (finalX == initialX-1)) && finalY == initialY+1*direction && finalPiece.getType() != EMPTY)  {
-        return true;
+
+    if (std::abs(changeInX) == 1 && changeInY == direction) {
+        
+        if (targetPiece.getType() != EMPTY && targetPiece.getColour() != movingPiece.getColour()) {
+            return true;
+        }
+
+        // En Passant: Target square is empty, but matches the board's EP target
+        auto enPassantSquare = board.getEnPassantSquare();
+        if (targetPiece.getType() == EMPTY && move.toX == enPassantSquare.first && move.toY == enPassantSquare.second) {
+            return true;
+        }
+
     }
 
     return false;
@@ -258,6 +277,7 @@ bool MoveLegality::isLegalMoveKnight(const Move& move, Board& board) {
     }
     
     return false;
+
 }
 
 bool MoveLegality::isLegalMoveRook(const Move& move, Board& board) {
@@ -320,6 +340,10 @@ bool MoveLegality::isLegalMoveKing(const Move& move, Board& board) {
     int initialY = move.fromY;
     int finalX = move.toX;
     int finalY = move.toY;
+
+    if (move.isCastling) {
+        return true;
+    }
     
     if (finalX == initialX+1 && finalY == initialY+1) {
         return true;

@@ -6,18 +6,15 @@
 
 // PAWN MOVES
 TEST(PawnLegalityTest, StandardPawnPushes) {
-    // Initial position
+    
     Board board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     
-    // e2 to e4 (Double push from start) - White
     Move e2e4(4, 6, 4, 4);
     EXPECT_TRUE(MoveLegality::isLegal(e2e4, board));
 
-    // e2 to e3 (Single push from start) - White
     Move e2e3(4, 6, 4, 5);
     EXPECT_TRUE(MoveLegality::isLegal(e2e3, board));
 
-    // Invalid: e2 to e5 (Triple push)
     Move e2e5(4, 6, 4, 3);
     EXPECT_FALSE(MoveLegality::isLegal(e2e5, board));
 }

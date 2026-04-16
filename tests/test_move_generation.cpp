@@ -38,7 +38,7 @@ TEST(MoveGenTest, EnPassantGeneration) {
 
 TEST(MoveGenTest, PromotionGeneration) {
     
-    Board board("k7/P7/8/8/8/8/8/K7 w - - 0 1");
+    Board board("7k/P7/8/8/8/8/8/K7 w - - 0 1");
     
     auto moves = MoveGenerator::generateAllLegalMoves(board);
     
