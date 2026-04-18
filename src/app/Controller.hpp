@@ -1,16 +1,20 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <iostream>
 
-#include "./Renderer.hpp"
+#include "./View.hpp"
 #include "../state/Board.hpp"
+#include "../engine/MoveGenerator.hpp"
+#include "../engine/MoveLegality.hpp"
 
 class Controller {
 
     private:
 
         std::unique_ptr<Board> board;
-        std::unique_ptr<Renderer> controller;
+        std::unique_ptr<View> view;
 
         bool running;
 
@@ -20,8 +24,20 @@ class Controller {
         int initialPiecePositionX;
         int initialPiecePositionY;
 
+        bool isPromoting = false;
+        Move pendingPromotionMove = Move(-1, -1, -1, -1);
+
+        
+        Uint32 lastFrameTime;
+        int whiteTimeMs;
+        int blackTimeMs;
+
+        bool isGameOver = false;
+        std::string gameOverText = "";
+
         void handleEvents();
         void render();
+        void checkGameOver();
 
     public:
 

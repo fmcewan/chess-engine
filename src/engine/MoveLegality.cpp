@@ -154,6 +154,23 @@ bool MoveLegality::isSquareAttacked(int targetX, int targetY, Colour attackerCol
         }
     }
 
+    // Check for kings 
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            if (dx == 0 && dy == 0) continue;
+            
+            int tx = targetX + dx;
+            int ty = targetY + dy;
+            
+            if (tx >= 0 && tx < 8 && ty >= 0 && ty < 8) {
+                Piece piece = grid[ty][tx];
+                if (piece.getType() == KING && piece.getColour() == attackerColor) {
+                    return true;
+                }
+            }
+        }
+    }
+
     return false;
 
 }
