@@ -8,6 +8,7 @@
 #include "../state/Board.hpp"
 #include "../engine/MoveGenerator.hpp"
 #include "../engine/MoveLegality.hpp"
+#include "../engine/Search.hpp"
 
 class Controller {
 
@@ -27,6 +28,7 @@ class Controller {
         bool isPromoting = false;
         Move pendingPromotionMove = Move(-1, -1, -1, -1);
 
+        bool playAgainstAI = true;
         
         Uint32 lastFrameTime;
         int whiteTimeMs;

@@ -5,7 +5,7 @@ LD_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 GTEST_FLAGS = -lgtest -lgtest_main -pthread
 
 # Source files (excluding main)
-SRCS = src/state/Board.cpp src/engine/MoveGenerator.cpp src/engine/MoveLegality.cpp src/utilities/FEN.cpp src/state/pieces/Piece.cpp src/app/View.cpp src/app/Controller.cpp
+SRCS = src/state/Board.cpp src/engine/MoveGenerator.cpp src/engine/MoveLegality.cpp src/engine/Evaluator.cpp src/engine/Search.cpp src/utilities/FEN.cpp src/state/pieces/Piece.cpp src/app/View.cpp src/app/Controller.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 # Test files

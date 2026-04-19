@@ -42,7 +42,19 @@ void Controller::run() {
                     gameOverText = "Flagged! White Wins on Time.";
                 }
             }
-        }   
+        }  
+        
+        if (playAgainstAI && board->getCurrentPlayer() == BLACK && !isGameOver && !isPromoting) {
+            
+            std::cout << "AI is thinking..." << std::endl;
+            
+            // Depth 3 means it looks 3 half-moves into the future
+            Move aiMove = Search::getBestMove(*board, 3); 
+            
+            board->makeMove(aiMove);
+            checkGameOver(); 
+            view->clearLegalMoveHints();
+        }
 
         handleEvents();
         render();
