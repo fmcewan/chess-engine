@@ -19,8 +19,7 @@ A fully functional Chess Engine and graphical user interface written in C++. Thi
 * **Positional Evaluation:** Utilises standard centipawn values (e.g., Queen = 900, Pawn = 100) and Piece-Square Tables (PSTs) to give the engine an understanding of positional play (e.g., controlling the center, keeping the King safe).
 
 ### ⚙️ Utilities
-* **FEN Parsing:** Includes a Forsyth-Edwards Notation (FEN) utility (`src/utilities/FEN.cpp`) allowing the board to be initialized from any standard chess position.
-* **Complete Move Legality:** Accurate move generation handling complex rules like absolute pins, checks, and pawn promotions.
+* **FEN Parsing and Generation:** Includes a Forsyth-Edwards Notation (FEN) utility (`src/utilities/FEN.cpp`) allowing the board to be initialised from any standard chess position.
 
 ## Project Structure
 
