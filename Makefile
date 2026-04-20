@@ -9,7 +9,7 @@ SRCS = src/state/Board.cpp src/engine/MoveGenerator.cpp src/engine/MoveLegality.
 OBJS = $(SRCS:.cpp=.o)
 
 # Test files
-TEST_SRCS = tests/test_board.cpp tests/test_move_generation.cpp tests/test_move_legality.cpp tests/test_perft.cpp
+TEST_SRCS = src/state/Board.cpp src/engine/MoveGenerator.cpp src/engine/MoveLegality.cpp src/engine/Evaluator.cpp src/engine/Search.cpp src/utilities/FEN.cpp src/state/pieces/Piece.cpp tests/test_board.cpp tests/test_move_generation.cpp tests/test_move_legality.cpp tests/test_perft.cpp
 TEST_OBJS = $(TEST_SRCS:.cpp=.o)
 
 # Main target for the actual game
@@ -17,7 +17,7 @@ chess: src/main.o $(OBJS)
 	$(CXX) $(CXXFLAGS) -o chess $^ $(LD_FLAGS)
 
 # Test target
-test: $(TEST_OBJS) $(OBJS)
+test: $(TEST_OBJS)
 	$(CXX) $(CXXFLAGS) -o run_tests $^ $(GTEST_FLAGS)
 	./run_tests
 

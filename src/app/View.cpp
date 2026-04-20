@@ -539,12 +539,12 @@ void View::drawGameOverlay(const std::string& text) {
     SDL_DestroyTexture(textTexture);
 
     playAgainButton = {300, 550, 180, 60};
-    SDL_SetRenderDrawColor(renderer, 50, 150, 50, 255); // Green box
+    SDL_SetRenderDrawColor(renderer, 50, 150, 50, 255); 
     SDL_RenderFillRect(renderer, &playAgainButton);
     drawText("Restart", 325, 560); 
 
     quitButton = {520, 550, 180, 60};
-    SDL_SetRenderDrawColor(renderer, 150, 50, 50, 255); // Red box
+    SDL_SetRenderDrawColor(renderer, 150, 50, 50, 255); 
     SDL_RenderFillRect(renderer, &quitButton);
     drawText("Quit", 565, 560);
 
@@ -556,4 +556,55 @@ int View::handleGameOverClick(SDL_Point mousePosition) {
     if (SDL_PointInRect(&mousePosition, &quitButton)) return 2;   
     return 0;                                               
 
+}
+
+void View::drawMainMenu() {
+    
+    SDL_SetRenderDrawColor(renderer, 48, 46, 43, 255);
+    SDL_RenderClear(renderer);
+
+    drawText("CHESS ENGINE", 370, 200);
+
+    pvpButton = {300, 350, 400, 80};
+    pveButton = {300, 470, 400, 80};
+    menuQuitButton = {300, 590, 400, 80};
+
+    SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255); 
+    SDL_RenderFillRect(renderer, &pvpButton);
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); 
+    SDL_RenderDrawRect(renderer, &pvpButton);
+    drawText("Player vs Player", 327, 370);
+
+    SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255); 
+    SDL_RenderFillRect(renderer, &pveButton);
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); 
+    SDL_RenderDrawRect(renderer, &pveButton);
+    drawText("Player vs Engine", 325, 490);
+
+    SDL_SetRenderDrawColor(renderer, 150, 50, 50, 255); 
+    SDL_RenderFillRect(renderer, &menuQuitButton);
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); 
+    SDL_RenderDrawRect(renderer, &menuQuitButton);
+    drawText("Quit", 460, 610);
+
+    SDL_RenderPresent(renderer);
+
+}
+
+int View::handleMainMenuClick(SDL_Point mousePosition) {
+    
+    if (SDL_PointInRect(&mousePosition, &pvpButton)) {
+        return 1;
+    }
+
+    if (SDL_PointInRect(&mousePosition, &pveButton)) {
+        return 2; 
+    }
+
+    if (SDL_PointInRect(&mousePosition, &menuQuitButton)) {
+        return 3; 
+    }
+    
+    return 0;
+    
 }

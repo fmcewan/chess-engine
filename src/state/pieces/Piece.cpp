@@ -2,7 +2,6 @@
 #include <utility>
 
 // Constructor
-
 Piece::Piece(PieceType piece_type_input, Colour color_input, int value_input): 
             type(piece_type_input), 
             colour(color_input), 

@@ -13,6 +13,10 @@ Controller::Controller() {
 
     whiteTimeMs = 600000;
     blackTimeMs = 600000;
+
+    currentState = MENU;
+    playAgainstAI = false;
+
     lastFrameTime = SDL_GetTicks();
 
 }
@@ -26,34 +30,38 @@ void Controller::run() {
         Uint32 deltaTime = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
 
-        if (!isGameOver && !isPromoting) {
+        if (currentState == GameState::IN_PLAY && !isPromoting) {
+            
             if (board->getCurrentPlayer() == WHITE) {
                 whiteTimeMs -= deltaTime;
                 if (whiteTimeMs <= 0) {
                     whiteTimeMs = 0;
-                    isGameOver = true;
+                    currentState = GameState::GAME_OVER;
                     gameOverText = "Flagged! Black Wins on Time.";
                 }
-            } else {
+            } 
+            
+            else {
                 blackTimeMs -= deltaTime;
                 if (blackTimeMs <= 0) {
                     blackTimeMs = 0;
-                    isGameOver = true;
+                    currentState = GameState::GAME_OVER;
                     gameOverText = "Flagged! White Wins on Time.";
                 }
             }
-        }  
-        
-        if (playAgainstAI && board->getCurrentPlayer() == BLACK && !isGameOver && !isPromoting) {
+
+            if (playAgainstAI && board->getCurrentPlayer() == BLACK && currentState != GameState::GAME_OVER && !isPromoting) {
+                
+                std::cout << "AI is thinking..." << std::endl;
+                
+                Move aiMove = Search::getBestMove(*board, 3); 
+                
+                board->makeMove(aiMove);
+                checkGameOver(); 
+                view->clearLegalMoveHints();
             
-            std::cout << "AI is thinking..." << std::endl;
-            
-            // Depth 3 means it looks 3 half-moves into the future
-            Move aiMove = Search::getBestMove(*board, 3); 
-            
-            board->makeMove(aiMove);
-            checkGameOver(); 
-            view->clearLegalMoveHints();
+            }
+
         }
 
         handleEvents();
@@ -141,46 +149,71 @@ void Controller::handleEvents() {
 
             case SDL_MOUSEBUTTONDOWN: {
 
-                if (isGameOver && event.button.button == SDL_BUTTON_LEFT) {
-                    mousePosition = {event.button.x, event.button.y};
+               mousePosition = {event.button.x, event.button.y};
+
+                // MAIN MENU 
+                if (currentState == GameState::MENU && event.button.button == SDL_BUTTON_LEFT) {
+                    
+                    int action = view->handleMainMenuClick(mousePosition);
+                    
+                    if (action == 1) {
+                        playAgainstAI = false;
+                        currentState = GameState::IN_PLAY;
+                    } 
+                    
+                    else if (action == 2) {
+                        playAgainstAI = true;
+                        currentState = GameState::IN_PLAY;
+                    } 
+                    
+                    else if (action == 3) {
+                        running = false;
+                    }
+                    
+                    break;
+                }
+
+                // GAME OVER
+                if (currentState == GameState::GAME_OVER && event.button.button == SDL_BUTTON_LEFT) {
                     int action = view->handleGameOverClick(mousePosition);
                     
                     if (action == 1) {
                         board = std::make_unique<Board>("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
                         whiteTimeMs = 600000;
                         blackTimeMs = 600000;
-                        isGameOver = false;
+                        currentState = GameState::MENU; 
                         leftMouseButtonDown = false;
                         isPromoting = false;
                         view->clearLegalMoveHints();
-                    } 
+                    }
+
                     else if (action == 2) {
                         running = false;
                     }
+                    
                     break; 
                 }
 
-                if (isPromoting && event.button.button == SDL_BUTTON_LEFT) {
-                    mousePosition = {event.button.x, event.button.y};
+                // PROMOTION CLICKS 
+                if (currentState == GameState::IN_PLAY && isPromoting && event.button.button == SDL_BUTTON_LEFT) {
+                    
                     PieceType selectedType = view->handlePromotionClick(mousePosition);
-            
+                    
                     if (selectedType != EMPTY) {
                         pendingPromotionMove.promotionPiece = selectedType;
                         board->makeMove(pendingPromotionMove); 
-               
                         checkGameOver();
-
                         isPromoting = false;
                         view->hidePromotionMenu();
                     }
                     
                     break;
+                
                 }
                 
-                if (!leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
-                    
+                // --- PIECE PICKUP ---
+                if (currentState == GameState::IN_PLAY && !leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
                     leftMouseButtonDown = true;
-                    mousePosition = {event.button.x, event.button.y};
                     view->pickupPiece(mousePosition, clickOffset, board->getCurrentPlayer());
 
                     initialPiecePositionX = mousePosition.x;
@@ -193,17 +226,13 @@ void Controller::handleEvents() {
                         std::vector<std::pair<int, int>> hintsForSelectedPiece;
 
                         for (Move& m : allLegalMoves) {
-                        // If the move starts where we clicked, it's a valid hint!
                             if (m.fromX == initialPosition.first && m.fromY == initialPosition.second) {
                                 hintsForSelectedPiece.push_back({m.toX, m.toY});
                             }
                         }
-            
-                    view->setLegalMoveHints(hintsForSelectedPiece, initialPosition);
-                    
+                        view->setLegalMoveHints(hintsForSelectedPiece, initialPosition);
                     }
-
-                }
+                } 
                 
                 break;
             }
@@ -221,16 +250,21 @@ void Controller::handleEvents() {
 // Renderer
 void Controller::render() {
 
-    if (!leftMouseButtonDown) {
-        view->drawFrame(board->getGrid());
-        view->drawPlayerInfo(whiteTimeMs, blackTimeMs, board->getGrid());
-        view->drawPromotionMenu();
+    if (currentState == MENU) {
+        view->drawMainMenu();
+    }
+    else {
+        if (!leftMouseButtonDown) {
+            view->drawFrame(board->getGrid());
+            view->drawPlayerInfo(whiteTimeMs, blackTimeMs, board->getGrid());
+            view->drawPromotionMenu();
 
-        if (isGameOver) {
-            view->drawGameOverlay(gameOverText);
+            if (currentState == GAME_OVER) {
+                view->drawGameOverlay(gameOverText);
+            }
+
+            view->presentBoard();
         }
-
-        view->presentBoard();
     }
 
 }
@@ -240,19 +274,24 @@ void Controller::checkGameOver() {
     std::vector<Move> nextMoves = MoveGenerator::generateAllLegalMoves(*board);
     
     if (nextMoves.empty()) {
-        isGameOver = true;
+        
+        currentState = GAME_OVER;
         
         bool inCheck = MoveLegality::isInCheck(board->getCurrentPlayer(), *board);
         
         if (inCheck) {
             if (board->getCurrentPlayer() == WHITE) {
                 gameOverText = "Checkmate! Black Wins.";
-            } else {
+            } 
+            else {
                 gameOverText = "Checkmate! White Wins.";
             }
-        } else {
+        } 
+        
+        else {
             gameOverText = "Stalemate! It's a draw.";
         }
+    
     }
 
 }

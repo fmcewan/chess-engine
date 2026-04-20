@@ -32,9 +32,13 @@ class View {
 
         std::vector<std::pair<int,int>> legalMoveHints;
 
-        // Add the Game Over menu tools:
+        // Buttons
         SDL_Rect playAgainButton;
         SDL_Rect quitButton;
+        
+        SDL_Rect pvpButton;
+        SDL_Rect pveButton;
+        SDL_Rect menuQuitButton;
 
         // Fonts
         TTF_Font* font;
@@ -69,8 +73,11 @@ class View {
 
         void drawPlayerInfo(int whiteTimeMS, int blackTimeMS, std::vector<std::vector<Piece>> grid);
         void drawGameOverlay(const std::string& text); 
+        void drawMainMenu();
+
         int handleGameOverClick(SDL_Point mousePosition);
-        
+        int handleMainMenuClick(SDL_Point mousePosition);
+
         void presentBoard();
 
         void initialiseBoard(std::vector < std::vector<Piece> > board);
