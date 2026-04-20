@@ -12,6 +12,7 @@
 class Search {
     private:
         static int minimax(Board& board, int depth, int alpha, int beta, bool isMaximizingPlayer);
+        static void orderMoves(std::vector<Move>& moves, Board& board);
 
     public:
         static Move getBestMove(Board& board, int depth);
