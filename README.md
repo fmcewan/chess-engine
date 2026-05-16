@@ -1,4 +1,4 @@
-# C++ Chess Engine
+# Chess Engine
 
 A fully functional Chess Engine and graphical user interface written in C++. This project features a custom chess AI opponent, complete rule implementation, an interactive UI powered by SDL2, and a robust suite of engine testing tools.
 
